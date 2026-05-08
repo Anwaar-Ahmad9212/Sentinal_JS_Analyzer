@@ -51,4 +51,4 @@ npm run dev
 For a full technical explanation of the detection methods, fixed-point iteration, and logic flow, see the [PROJECT_GUIDE.md](./PROJECT_GUIDE.md).
 
 ---
-*Made with ❤️ by E-Corp Security Division.*
+*Made with ❤️ by Elliot Alderson 'Hello Friend'.*
