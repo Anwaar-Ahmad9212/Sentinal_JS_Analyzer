@@ -6,3 +6,5 @@ coverage/
 *.log
 .env*
 !.env.example
+debug_*.ts
+test_*.ts

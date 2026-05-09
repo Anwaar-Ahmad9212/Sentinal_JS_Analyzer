@@ -1,5 +1,6 @@
 import { AnalyzerRule, VulnerabilityType, RiskLevel, SecurityIssue } from '../types';
-import traverse from '@babel/traverse';
+import _traverse from '@babel/traverse';
+const traverse = (_traverse as any).default || _traverse;
 import { getTaintState, isNodeVulnerable } from '../taint';
 
 export const xssRule: AnalyzerRule = {
@@ -82,7 +83,7 @@ export const xssRule: AnalyzerRule = {
                 "Sanitize all HTML content using a library like DOMPurify.",
                 "Use framework-specific safe rendering methods (e.g., standard JSX template escaping)."
               ],
-              fix_code: `// Safe approach using textContent\nelement.textContent = userInput;\n\n// Safe approach using DOMPurify\nelement.innerHTML = DOMPurify.sanitize(userInput);`,
+              fix_code: `DOMPurify.sanitize(userInput)`,
               flow: ["Source: User Input", "Propagation: Variable Taint", `Sink: ${sinkName}`]
             });
           }

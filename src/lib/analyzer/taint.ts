@@ -1,4 +1,5 @@
-import traverse from '@babel/traverse';
+import _traverse from '@babel/traverse';
+const traverse = (_traverse as any).default || _traverse;
 
 export interface TaintState {
   taintedVariables: Map<string, { sanitized: boolean; nestedProperties: Set<string> }>;
@@ -126,7 +127,7 @@ export function getTaintState(ast: any): TaintState {
           const checkTaint = (initNode: any): boolean => {
             if (isSource(initNode)) return true;
             if (initNode.type === 'Identifier' && taintedVariables.has(initNode.name)) return true;
-            if (initNode.type === 'BinaryExpression') return checkTaint(initNode.left) || checkTaint(initNode.right);
+            if (initNode.type === 'BinaryExpression' || initNode.type === 'LogicalExpression') return checkTaint(initNode.left) || checkTaint(initNode.right);
             if (initNode.type === 'TemplateLiteral') return initNode.expressions.some((e: any) => checkTaint(e));
             if (initNode.type === 'CallExpression' && initNode.callee.type === 'Identifier') {
               const fn = initNode.callee.name;
@@ -143,6 +144,23 @@ export function getTaintState(ast: any): TaintState {
           }
         }
       },
+      TemplateLiteral(path: any) {
+        const node = path.node;
+        // If any expression in the template is tainted, the whole literal is tainted
+        const anyTainted = node.expressions.some((exp: any) => {
+          if (exp.type === 'Identifier' && taintedVariables.has(exp.name)) return true;
+          return false;
+        });
+
+        if (anyTainted && path.parentPath.isVariableDeclarator()) {
+          const varName = path.parentPath.node.id.name;
+          if (varName && !taintedVariables.has(varName)) {
+            taintedVariables.set(varName, { sanitized: false, nestedProperties: new Set() });
+            changed = true;
+          }
+        }
+      },
+
       AssignmentExpression(path: any) {
         const { node } = path;
         if (node.left.type === 'MemberExpression') {
@@ -249,12 +267,15 @@ export function isNodeVulnerable(
         }
     if (isSanitizer(n)) sanitized = true;
     
-    if (n.type === 'BinaryExpression') {
+    if (n.type === 'BinaryExpression' || n.type === 'LogicalExpression') {
         check(n.left);
         check(n.right);
     }
     if (n.type === 'TemplateLiteral') {
         n.expressions.forEach(check);
+    }
+    if (n.type === 'ArrayExpression') {
+        n.elements.forEach(check);
     }
     if (n.type === 'CallExpression') {
         const fnName = n.callee.name || (n.callee.property && n.callee.property.name);

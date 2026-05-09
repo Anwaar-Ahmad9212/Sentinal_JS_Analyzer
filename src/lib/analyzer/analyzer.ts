@@ -17,12 +17,28 @@ export function analyzeCode(code: string): AnalysisReport {
       allIssues = [...allIssues, ...issues];
     });
 
-    // Deduplicate issues by line and type
-    const uniqueIssues = allIssues.filter((issue, index, self) =>
-      index === self.findIndex((t) => (
+    // Deduplicate issues by line and type, and filter out patched lines
+    const lines = code.split('\n');
+    const uniqueIssues = allIssues.filter((issue, index, self) => {
+      const isUnique = index === self.findIndex((t) => (
         t.line === issue.line && t.type === issue.type && t.message === issue.message
-      ))
-    );
+      ));
+      if (!isUnique) return false;
+
+      const lineContent = lines[issue.line - 1] || '';
+      const prevLineContent = lines[issue.line - 2] || '';
+      
+      // If the line or the line directly above has our resolution tag, consider it patched
+      if (
+          lineContent.includes('// FIXED:') || 
+          prevLineContent.includes('// FIXED:') ||
+          lineContent.includes('// AUTO-SECURED:') ||
+          prevLineContent.includes('// AUTO-SECURED:')
+      ) {
+        return false;
+      }
+      return true;
+    });
 
     // Sort by line number
     uniqueIssues.sort((a, b) => a.line - b.line);

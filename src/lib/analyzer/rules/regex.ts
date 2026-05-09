@@ -12,21 +12,24 @@ export const regexRule: AnalyzerRule = {
         risk: RiskLevel.MEDIUM,
         message: "Potential hardcoded credential detected.",
         explanation: "Statically defined passwords in source code can be easily extracted and lead to unauthorized access.",
-        fix_steps: ["Move secrets to environment variables.", "Use a secrets management service."]
+        fix_steps: ["Move secrets to environment variables.", "Use a secrets management service."],
+        fix_code: "// Use environment variables\nconst pass = process.env.DB_PASSWORD;"
       },
       {
         regex: /http:\/\//,
         risk: RiskLevel.LOW,
         message: "Insecure protocol (HTTP) used.",
         explanation: "HTTP traffic is unencrypted and vulnerable to man-in-the-middle attacks.",
-        fix_steps: ["Replace http:// with https://.", "Enforce HSTS."]
+        fix_steps: ["Replace http:// with https://.", "Enforce HSTS."],
+        fix_code: "// Use HTTPS\nconst url = 'https://...';"
       },
       {
         regex: /TODO:\s*security/i,
         risk: RiskLevel.INFORMATIONAL,
         message: "Unresolved security note found.",
         explanation: "Development comments indicating security debt should be addressed before production.",
-        fix_steps: ["Audit the specified code block.", "Resolve the listed security concern."]
+        fix_steps: ["Audit the specified code block.", "Resolve the listed security concern."],
+        fix_code: "// SECURITY TASK: Resolve this debt\n// [ALREADY AUDITED]: ..."
       }
     ];
 
@@ -41,7 +44,7 @@ export const regexRule: AnalyzerRule = {
             message: p.message,
             explanation: p.explanation,
             fix_steps: p.fix_steps,
-            fix_code: "// Use environment variables\nconst pass = process.env.DB_PASSWORD;"
+            fix_code: (p as any).fix_code
           });
         }
       });

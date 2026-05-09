@@ -1,5 +1,6 @@
 import { AnalyzerRule, VulnerabilityType, RiskLevel, SecurityIssue } from '../types';
-import traverse from '@babel/traverse';
+import _traverse from '@babel/traverse';
+const traverse = (_traverse as any).default || _traverse;
 
 export const csrfRule: AnalyzerRule = {
   type: VulnerabilityType.CSRF,
