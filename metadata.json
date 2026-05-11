@@ -1,0 +1,6 @@
+{
+  "name": "SentinelJS Static Analyzer",
+  "description": "A rule-based static security analyzer for Node.js/Express applications to detect RCE, XSS, and CSRF vulnerabilities using AST analysis.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
